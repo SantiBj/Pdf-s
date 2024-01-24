@@ -12,7 +12,7 @@ def logic(request):
     if (request.method == "POST"):
         data = dataPdf(request.FILES['file'])
         namePdf = f"{data['nameFile'].split('.')[0]}.xlsx"
-        excel = printDataInExcel(data["records"],namePdf)
+        excel = printDataInExcel(data["records"])
 
         excel_buffer = BytesIO()
         excel.save(excel_buffer)

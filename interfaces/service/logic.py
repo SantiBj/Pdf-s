@@ -31,7 +31,7 @@ def dataPdf(pdf)->dict:
 
 # funcion imprimir datos excel
 
-def printDataInExcel(records:list[tuple],nameFile:str):
+def printDataInExcel(records:list[tuple]):
     book = openpyxl.load_workbook("plantilla.xlsx")
     sheet = book.worksheets[0]
 
@@ -43,6 +43,5 @@ def printDataInExcel(records:list[tuple],nameFile:str):
                 sheet.cell(row=rowIndex, column=colIndex, value=value)
 
    
-    book.save(nameFile)
     return book
 
