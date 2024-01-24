@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <script src="https://cdn.tailwindcss.com"></script>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Pdf's</title>
+    </head>
+    <body class="transition-all  h-screen relative flex justify-center items-center">
+        <section id="loader" class="hidden h-screen bg-white w-screen absolute top-0 flex justify-center items-center">
+            <img class="w-[70px]" src="https://cdn3.emoji.gg/emojis/3339_loading.gif" alt="cargando">
+        </section>
+        <section class="md:flex gap-[20px] items-center">
+            <section id="name-file" class="hidden relative border border-[2px] border-red-500 p-[15px] rounded-lg h-fit w-[200px] ">
+                <div id="btn-cancel" class="absolute right-[10px] top-[5px] transition-all hover:scale-125">
+                    <img class="w-[20px]" src="https://static.vecteezy.com/system/resources/thumbnails/017/350/132/small/red-cancel-icon-design-png.png" alt="cancelar">
+                </div>
+                <section class="flex mt-[10px] items-center justify-center gap-x-[15px]">
+                    <div class="w-[20%] ">
+                        <img
+                            src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/PDF_file_icon.svg/833px-PDF_file_icon.svg.png"
+                            alt="pdf">
+                    </div>
+                    <div id="name" class="w-[80%] text-pretty">
+                    </div>
+                </section>
+            </section>
+            
+            <section id="form" class="flex transition-all flex-col items-center">
+                {% csrf_token %}
+                <div class="w-fit hover:scale-75 transition-all">
+                    <label for="input-pdf" class="">
+                        <img class="w-[100px]" src="https://www.solidworks.com/sites/default/files/2022-07/sw-icon-004b-upload.png" alt="subir imagen">
+                    </label>
+                    <input id="input-pdf" class="hidden" type="file" accept=".pdf">
+                </div>
+                <p id="error" class="hidden text-red-700 mt-[10px] mb-[20px]">Añada primero un archivo</p>
+                <div>
+                    <button id="btn-pdf" class="border border-green-500 text-green-700
+                        rounded-md border-[2px] p-[3px] text-[13px] w-[80px]">
+                        Generar
+                    </button>
+                </div>
+            </section>
+        </section>
+    </body>
+    <script>
+        const csrfToken = "{{ csrf_token }}"
+        const loading = document.getElementById("loader")
+        const nameFile = document.getElementById("name-file")
+        const name = document.getElementById("name")
+        const btnCancel = document.getElementById("btn-cancel")
+        const fileInput = document.getElementById("input-pdf")
+        const btnPdf = document.getElementById("btn-pdf")
+        const messageError = document.getElementById("error")
+
+        fileInput.addEventListener("change",()=>{
+            if(fileInput.files.length > 0){
+                error.classList.add("hidden")
+                nameFile.classList.remove('hidden')
+                name.innerHTML = fileInput.files[0].name
+            }
+        })
+
+        btnCancel.addEventListener("click",()=>{
+            if(fileInput.files.length > 0){
+                fileInput.value = ''
+                nameFile.classList.add('hidden')
+            }
+        })
+
+        async function consult(){
+            loading.classList.remove("hidden")
+            const form = new FormData()
+            form.append('file',fileInput.files[0])
+            try {
+                const excel = await fetch("/generate-excel",{
+                    method:'POST',
+                    body:form,
+                    headers:{
+                        'X-CSRFToken': csrfToken
+                    }
+                })
+                if (!excel.status){
+                    throw new Error(excel.status)
+                }
+                const file = await excel.blob()
+                return file
+            } catch (error) {
+                location.reload(true)
+            } finally {
+                loading.classList.add("hidden")
+            }
+        }
+
+        btnPdf.addEventListener("click",async ()=>{
+            if (fileInput.files.length === 0){
+                error.classList.add("hidden")
+                messageError.classList.remove("hidden")
+            }else{
+                const excel = await consult()
+                window.open(URL.createObjectURL(excel),'_blank')
+            }
+        })
+    </script>
+</html>
